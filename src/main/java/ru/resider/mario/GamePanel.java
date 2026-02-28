@@ -2,9 +2,15 @@ package ru.resider.mario;
 
 import javax.swing.JPanel;
 import java.awt.*;
+import java.io.Serial;
 
 public class GamePanel extends JPanel implements Runnable {
-    private Thread gameThread;
+    @Serial
+    private static final long serialVersionUID = 1L;
+    private transient Thread gameThread;
+    private final transient KeyHandler keyH = new KeyHandler();
+    private final transient Player player = new Player(keyH);
+
     private static final int SCREEN_WIDTH = 800;
     private static final int SCREEN_HEIGHT = 600;
     private static final int FPS = 60;
@@ -13,7 +19,13 @@ public class GamePanel extends JPanel implements Runnable {
         this.setPreferredSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
         this.setBackground(Color.BLACK);
         this.setDoubleBuffered(true); //делает анимацию более плавной и предотвращает мерцание.
+        this.addKeyListener(keyH);
+        this.setFocusable(true);// Позволяем панели быть в фокусе
+
+        player.setX(100);
+        player.setY(100);
         this.startGameThread();
+
     }
 
     public void startGameThread() {
@@ -22,13 +34,14 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     public void update() {
+       player.update();
     }
 
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         g.setColor(Color.RED);
-        g.fillRect(100, 100, 50, 50);
+        g.fillRect(player.getX(),(int) player.getY(), 50, 50);
     }
 
     @Override
@@ -56,6 +69,7 @@ public class GamePanel extends JPanel implements Runnable {
                 // Этот блок нужен, если поток будет прерван извне.
                 // Пока можно просто вывести информацию об ошибке.
                 e.printStackTrace();
+                Thread.currentThread().interrupt();
             }
         }
     }
