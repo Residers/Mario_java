@@ -7,13 +7,20 @@ import java.io.Serial;
 public class GamePanel extends JPanel implements Runnable {
     @Serial
     private static final long serialVersionUID = 1L;
+
     private transient Thread gameThread;
     private final transient KeyHandler keyH = new KeyHandler();
     private final transient Player player = new Player(keyH);
+    private final transient TileManager tileM = new TileManager(this);
 
     private static final int SCREEN_WIDTH = 800;
     private static final int SCREEN_HEIGHT = 600;
     private static final int FPS = 60;
+    public static final int TILE_SIZE = 32;
+
+    public static final int MAX_SCREEN_COL = SCREEN_WIDTH / TILE_SIZE;
+    public static final int MAX_SCREEN_ROW = SCREEN_HEIGHT / TILE_SIZE;
+
 
     public GamePanel() {
         this.setPreferredSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
@@ -34,14 +41,19 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     public void update() {
-       player.update();
+        player.update();
     }
 
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        g.setColor(Color.RED);
-        g.fillRect(player.getX(),(int) player.getY(), 50, 50);
+        Graphics2D g2 = (Graphics2D) g;
+
+        tileM.draw(g2);
+        g2.setColor(Color.RED);
+        g2.fillRect(player.getX(), (int) player.getY(), TILE_SIZE, TILE_SIZE);
+
+        g2.dispose();
     }
 
     @Override
