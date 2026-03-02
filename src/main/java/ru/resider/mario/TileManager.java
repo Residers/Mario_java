@@ -17,7 +17,7 @@ public class TileManager {
     public TileManager(GamePanel gp) {
         this.gp = gp;
         tile = new Tile[10];
-        mapTileNum = new int[GamePanel.MAX_SCREEN_COL][GamePanel.MAX_SCREEN_ROW];
+        mapTileNum = new int[GamePanel.MAX_WORLD_COL][GamePanel.MAX_WORLD_ROW];
         getTileImage();
 
         loadMap();
@@ -28,23 +28,25 @@ public class TileManager {
             // Получаем доступ к файлу карты
             InputStream is = getClass().getResourceAsStream("/maps/world01.txt");
             // Создаем "читателя" для удобной работы с текстовым файлом
-            BufferedReader br = new BufferedReader(new InputStreamReader(is));
+            BufferedReader br = new BufferedReader(new InputStreamReader(Objects.requireNonNull(is)));
 
-            int col = 0;
-            int row = 0;
-
-            while (row < GamePanel.MAX_SCREEN_ROW) {
-                // Читаем одну строку из файла
+            for (int row = 0; row < GamePanel.MAX_WORLD_ROW; row++) {
                 String line = br.readLine();
+                // Если файл закончился раньше, чем мы ожидали, прекращаем работу
+                if (line == null) {
+                    break;
+                }
+
                 String[] numbers = line.split(" ");
 
-                while (col < GamePanel.MAX_SCREEN_COL) {
-                    int num = Integer.parseInt(numbers[col]);
-                    mapTileNum[col][row] = num;
-                    col++;
+                for (int col = 0; col < GamePanel.MAX_WORLD_COL; col++) {
+                    // Если в строке файла меньше чисел, чем мы ожидаем,
+                    // просто используем 0 (земля) для оставшихся ячеек.
+                    if (col < numbers.length) {
+                        int num = Integer.parseInt(numbers[col]);
+                        mapTileNum[col][row] = num;
+                    }
                 }
-                col = 0;
-                row++;
             }
             br.close(); // Закрываем "читателя"
 
@@ -54,31 +56,44 @@ public class TileManager {
     }
 
     public void draw(Graphics2D g2, Player player) {
-        int col = 0;
-        int row = 0;
+        // --- ОПРЕДЕЛЯЕМ ГРАНИЦЫ ВИДИМОЙ ОБЛАСТИ ---
+        // Левая граница (какая колонка мира видна слева на экране)
+        int worldColStart = (player.getWorldX() - player.screenX) / GamePanel.TILE_SIZE;
+        // Правая граница
+        int worldColEnd = (player.getWorldX() + player.screenX) / GamePanel.TILE_SIZE + 2; // +2 для буфера
+        // Верхняя граница
+        int worldRowStart = (int) ((player.getWorldY() - player.screenY) / GamePanel.TILE_SIZE);
+        // Нижняя граница
+        int worldRowEnd = (int) ((player.getWorldY() + player.screenY) / GamePanel.TILE_SIZE) + 2; // +2 для буфера
 
+        for (int worldRow = worldRowStart; worldRow < worldRowEnd; worldRow++) {
+            for (int worldCol = worldColStart; worldCol < worldColEnd; worldCol++) {
 
-        while (col < GamePanel.MAX_SCREEN_COL && row < GamePanel.MAX_SCREEN_ROW) {
-            int tileNum = mapTileNum[col][row];
+                // Пропускаем отрисовку, если вышли за пределы карты
+                if (worldCol < 0 || worldCol >= GamePanel.MAX_WORLD_COL ||
+                        worldRow < 0 || worldRow >= GamePanel.MAX_WORLD_ROW) {
+                    continue;
+                }
 
-            int worldX = col * GamePanel.getTileSize();
-            int worldY = row * GamePanel.getTileSize();
+                int tileNum = mapTileNum[worldCol][worldRow];
+                // Координаты плитки в мире
+                int worldX = worldCol * GamePanel.TILE_SIZE;
+                int worldY = worldRow * GamePanel.TILE_SIZE;
 
-            // Координаты плитки на экране.
-            // Мы вычитаем worldX игрока и добавляем его screenX.
-            // Это создает эффект камеры.
-            int screenX = worldX - player.getWorldX() + player.screenX;
-            int screenY = (int) (worldY - player.getWorldY() + player.screenY);
+                // Координаты плитки на экране (формула та же)
+                int screenX = worldX - player.getWorldX() + player.screenX;
+                int screenY = (int) (worldY - player.getWorldY() + player.screenY);
 
-            g2.drawImage(tile[tileNum].getImage(), screenX, screenY, GamePanel.TILE_SIZE, GamePanel.TILE_SIZE, null);
-            col++;
-
-            if (col == GamePanel.MAX_SCREEN_COL) {
-                col = 0;
-                row++;
+                // Рисуем плитку, только если она находится в пределах экрана
+                // Это дополнительная оптимизация, чтобы не рисовать то, что уже за кадром
+                if (screenX > -GamePanel.TILE_SIZE && screenX < GamePanel.getScreenWidth() &&
+                        screenY > -GamePanel.TILE_SIZE && screenY < GamePanel.getScreenHeight()) {
+                    g2.drawImage(tile[tileNum].getImage(), screenX, screenY, GamePanel.TILE_SIZE, GamePanel.TILE_SIZE, null);
+                }
             }
         }
     }
+
 
     public void getTileImage() {
         try {

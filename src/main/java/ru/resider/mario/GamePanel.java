@@ -7,7 +7,8 @@ import java.io.Serial;
 public class GamePanel extends JPanel implements Runnable {
     @Serial
     private static final long serialVersionUID = 1L;
-
+    public static final int MAX_WORLD_COL = 50;
+    public static final int MAX_WORLD_ROW = 50;
     private transient Thread gameThread;
     private final transient KeyHandler keyH = new KeyHandler();
     private final transient Player player = new Player(this, keyH);
