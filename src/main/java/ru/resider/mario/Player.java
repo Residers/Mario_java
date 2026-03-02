@@ -1,40 +1,47 @@
 package ru.resider.mario;
 
 public class Player {
-    private int x;
-    private double y;
+    public final int screenX;
+    public final int screenY;
+    private final GamePanel gp;
+    private int worldX;
+    private double worldY;
     private double velocityY;
     private static final double GRAVITY = 0.5;
     private int jumpLeft = 2;
     private final int speed = 4;
     private final KeyHandler keyH;
 
-    public Player(KeyHandler keyH) {
+    public Player(GamePanel gp, KeyHandler keyH) {
         this.keyH = keyH;
+        this.gp = gp;
+        // Устанавливаем игрока в центр экрана
+        this.screenX = GamePanel.getScreenWidth() / 2 - (GamePanel.getTileSize() / 2);
+        this.screenY = GamePanel.getScreenHeight() / 2 - (GamePanel.getTileSize() / 2);
     }
 
-    public int getX() {
-        return x;
+    public int getWorldX() {
+        return worldX;
     }
 
-    public double getY() {
-        return y;
+    public double getWorldY() {
+        return worldY;
     }
 
-    public void setX(int x) {
-        this.x = x;
+    public void setWorldX(int worldX) {
+        this.worldX = worldX;
     }
 
-    public void setY(double y) {
-        this.y = y;
+    public void setWorldY(double worldY) {
+        this.worldY = worldY;
     }
 
     public void update() {
         if (keyH.isLeftPressed()) {
-            x -= speed;
+            worldX -= speed;
         }
         if (keyH.isRightPressed()) {
-            x += speed;
+            worldX += speed;
         }
         if (keyH.isJumpPressed() && jumpLeft > 0) {
             velocityY = -15;
@@ -44,9 +51,9 @@ public class Player {
             keyH.setJumpPressed(false);
         }
         velocityY += GRAVITY;
-        y += velocityY;
-        if (y > 550) {
-            y = 550;
+        worldY += velocityY;
+        if (worldY > 550) {
+            worldY = 550;
             velocityY = 0;
             jumpLeft = 2;
         }

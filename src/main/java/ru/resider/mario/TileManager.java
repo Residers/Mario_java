@@ -53,22 +53,29 @@ public class TileManager {
         }
     }
 
-    public void draw(Graphics2D g2) {
+    public void draw(Graphics2D g2, Player player) {
         int col = 0;
         int row = 0;
-        int x = 0;
-        int y = 0;
+
 
         while (col < GamePanel.MAX_SCREEN_COL && row < GamePanel.MAX_SCREEN_ROW) {
             int tileNum = mapTileNum[col][row];
-            g2.drawImage(tile[tileNum].getImage(), x, y, GamePanel.TILE_SIZE, GamePanel.TILE_SIZE, null);
+
+            int worldX = col * GamePanel.getTileSize();
+            int worldY = row * GamePanel.getTileSize();
+
+            // Координаты плитки на экране.
+            // Мы вычитаем worldX игрока и добавляем его screenX.
+            // Это создает эффект камеры.
+            int screenX = worldX - player.getWorldX() + player.screenX;
+            int screenY = (int) (worldY - player.getWorldY() + player.screenY);
+
+            g2.drawImage(tile[tileNum].getImage(), screenX, screenY, GamePanel.TILE_SIZE, GamePanel.TILE_SIZE, null);
             col++;
-            x += GamePanel.TILE_SIZE;
+
             if (col == GamePanel.MAX_SCREEN_COL) {
                 col = 0;
-                x = 0;
                 row++;
-                y += GamePanel.TILE_SIZE;
             }
         }
     }

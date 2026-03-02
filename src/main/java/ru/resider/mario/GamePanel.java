@@ -10,7 +10,7 @@ public class GamePanel extends JPanel implements Runnable {
 
     private transient Thread gameThread;
     private final transient KeyHandler keyH = new KeyHandler();
-    private final transient Player player = new Player(keyH);
+    private final transient Player player = new Player(this, keyH);
     private final transient TileManager tileM = new TileManager(this);
 
     private static final int SCREEN_WIDTH = 800;
@@ -29,10 +29,22 @@ public class GamePanel extends JPanel implements Runnable {
         this.addKeyListener(keyH);
         this.setFocusable(true);// Позволяем панели быть в фокусе
 
-        player.setX(100);
-        player.setY(100);
+        player.setWorldX(100);
+        player.setWorldY(100);
         this.startGameThread();
 
+    }
+
+    public static int getScreenWidth() {
+        return SCREEN_WIDTH;
+    }
+
+    public static int getScreenHeight() {
+        return SCREEN_HEIGHT;
+    }
+
+    public static int getTileSize() {
+        return TILE_SIZE;
     }
 
     public void startGameThread() {
@@ -49,9 +61,9 @@ public class GamePanel extends JPanel implements Runnable {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
 
-        tileM.draw(g2);
+        tileM.draw(g2, player);
         g2.setColor(Color.RED);
-        g2.fillRect(player.getX(), (int) player.getY(), TILE_SIZE, TILE_SIZE);
+        g2.fillRect(player.screenX, player.screenY, TILE_SIZE, TILE_SIZE);
 
         g2.dispose();
     }
