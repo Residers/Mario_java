@@ -11,7 +11,7 @@ import java.util.Objects;
 public class TileManager {
 
     private GamePanel gp;
-    public Tile[] tile;
+    private Tile[] tile;
     private int[][] mapTileNum;
 
     public TileManager(GamePanel gp) {
@@ -21,6 +21,14 @@ public class TileManager {
         getTileImage();
 
         loadMap();
+    }
+
+    public Tile[] getTile() {
+        return tile;
+    }
+
+    public int[][] getMapTileNum() {
+        return mapTileNum;
     }
 
     public void loadMap() {

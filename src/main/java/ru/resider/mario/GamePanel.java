@@ -11,7 +11,8 @@ public class GamePanel extends JPanel implements Runnable {
     public static final int MAX_WORLD_ROW = 50;
     private transient Thread gameThread;
     private final transient KeyHandler keyH = new KeyHandler();
-    private final transient Player player = new Player(this, keyH);
+    public final transient CollisionChecker cChecker = new CollisionChecker(this);
+    private final transient Player player = new Player(this, keyH, cChecker);
     private final transient TileManager tileM = new TileManager(this);
 
     private static final int SCREEN_WIDTH = 800;
